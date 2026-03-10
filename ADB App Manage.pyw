@@ -17,7 +17,8 @@ class ADBInstaller:
         except Exception as e:
             # 图标设置失败不影响程序运行
             pass
-        self.root.geometry("600x600")
+        self.root.geometry("700x600")
+        self.default_geometry = "700x600"
         self.root.resizable(True, True)
         self.current_theme = None # 初始主题未设置，将在_apply_theme中加载或设置为默认
         self._apply_theme() # 应用主题 (根据保存的设置或默认值)
@@ -199,13 +200,10 @@ class ADBInstaller:
         # 状态文本框 - WinUI风格
         self.status_text = tk.Text(status_frame, 
                                  height=10,
-                                 bg='#2a2a2a', # 深色背景
-                                 fg='#ffffff', # 白色前景
                                  font=('Segoe UI', 10),
                                  borderwidth=1,
                                  relief='solid',
-                                 highlightthickness=0,
-                                 insertbackground='#0078d4')
+                                 highlightthickness=0)
         self.status_text.pack(fill=tk.BOTH, expand=True)
         self.status_text.config(state=tk.DISABLED)
         
@@ -289,7 +287,7 @@ class ADBInstaller:
         
         # 窗口大小输入框
         ttk.Label(window_size_frame, text="窗口大小:").grid(row=0, column=0, sticky=tk.W, pady=5)
-        self.window_size_var = tk.StringVar(value="600x600")
+        self.window_size_var = tk.StringVar(value=self.default_geometry)
         self.window_size_entry = ttk.Entry(window_size_frame, textvariable=self.window_size_var)
         self.window_size_entry.grid(row=0, column=1, sticky=tk.W+tk.E, pady=5, padx=5)
         self.window_size_entry.bind('<FocusOut>', lambda event: self.save_settings())
@@ -634,7 +632,6 @@ class ADBInstaller:
         
         window_size = self.window_size_var.get()
         # 应用窗口大小
-        self.root.geometry(window_size)
         with open(settings_file, 'w', encoding='utf-8') as f:
             f.write(f"auto_connect={self.auto_connect}\n")
             f.write(f"show_emoji={self.show_emoji}\n")
@@ -669,7 +666,7 @@ class ADBInstaller:
     
     def restore_default_window_size(self):
         """恢复默认窗口大小"""
-        default_size = "600x600"
+        default_size = self.default_geometry
         self.window_size_var.set(default_size)
         self.root.geometry(default_size)
         self.log(f"已恢复默认窗口大小: {default_size}")
@@ -724,14 +721,10 @@ class ADBInstaller:
         # 包名列表框 - WinUI风格
         self.package_listbox = tk.Listbox(list_frame, 
                                          height=15,
-                                         bg='#2a2a2a', # 深色背景
-                                         fg='#ffffff', # 白色前景
                                          font=('Segoe UI', 10),
                                          borderwidth=1,
                                          relief='solid',
-                                         highlightthickness=0,
-                                         selectbackground='#4a4a4a', # 选中背景深色
-                                         selectforeground='#ffffff') # 选中前景白色
+                                         highlightthickness=0)
         self.package_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         # 滚动条
@@ -745,7 +738,7 @@ class ADBInstaller:
         self.package_listbox.bind('<Double-1>', self.on_package_double_click)
         
         # 创建右键菜单
-        self.package_menu = tk.Menu(self.root, tearoff=0, bg='#2a2a2a', fg='#ffffff', activebackground='#4a4a4a', activeforeground='#ffffff', border=1, relief='solid') # 深色主题适配
+        self.package_menu = tk.Menu(self.root, tearoff=0) # 移除硬编码颜色，交给 sv_ttk 处理主题
         self.package_menu.add_command(label="卸载", command=self.uninstall_selected_package)
         self.package_menu.add_command(label="复制包名", command=self.copy_package_name)
         
@@ -930,14 +923,10 @@ class ADBInstaller:
         # 文件列表
         self.file_listbox = tk.Listbox(list_frame, 
                                      height=15,
-                                     bg='#2a2a2a', # 深色背景
-                                     fg='#ffffff', # 白色前景
                                      font=('Segoe UI', 10),
                                      borderwidth=1,
                                      relief='solid',
-                                     highlightthickness=0,
-                                     selectbackground='#4a4a4a', # 选中背景深色
-                                     selectforeground='#ffffff') # 选中前景白色
+                                     highlightthickness=0)
         self.file_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         # 滚动条
@@ -951,7 +940,7 @@ class ADBInstaller:
         self.file_listbox.bind('<Double-1>', self.on_file_double_click)
         
         # 创建右键菜单
-        self.file_menu = tk.Menu(self.root, tearoff=0, bg='#2a2a2a', fg='#ffffff', activebackground='#4a4a4a', activeforeground='#ffffff', border=1, relief='solid') # 深色主题适配
+        self.file_menu = tk.Menu(self.root, tearoff=0) # 移除硬编码颜色，交给 sv_ttk 处理主题
         self.file_menu.add_command(label="上传文件", command=self.upload_file)
         self.file_menu.add_command(label="下载文件", command=self.download_file)
         self.file_menu.add_command(label="安装APK", command=self.install_apk_from_file)
@@ -1631,7 +1620,7 @@ class ADBInstaller:
         dialog.grab_set()  # 模态对话框
         
         # 设置背景色
-        dialog.configure(bg='#2a2a2a') # 深色主题适配
+        dialog.configure(bg='SystemWindow') # 使用系统默认窗口背景色，让sv_ttk管理
         
         # 创建框架
         frame = ttk.Frame(dialog, padding="20")
@@ -1693,7 +1682,7 @@ class ADBInstaller:
         dialog.grab_set()
         
         # 设置背景色
-        dialog.configure(bg='#2a2a2a') # 深色主题适配
+        dialog.configure(bg='SystemWindow') # 使用系统默认窗口背景色，让sv_ttk管理
         
         # 创建框架
         frame = ttk.Frame(dialog, padding="20")
@@ -1729,7 +1718,7 @@ class ADBInstaller:
         dialog.grab_set()
         
         # 设置背景色
-        dialog.configure(bg='#2a2a2a') # 深色主题适配
+        dialog.configure(bg='SystemWindow') # 使用系统默认窗口背景色，让sv_ttk管理
         
         # 创建框架
         frame = ttk.Frame(dialog, padding="20")
@@ -1765,7 +1754,7 @@ class ADBInstaller:
         dialog.grab_set()
         
         # 设置背景色
-        dialog.configure(bg='#2a2a2a') # 深色主题适配
+        dialog.configure(bg='SystemWindow') # 使用系统默认窗口背景色，让sv_ttk管理
         
         # 创建框架
         frame = ttk.Frame(dialog, padding="20")
