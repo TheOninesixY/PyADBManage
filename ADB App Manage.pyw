@@ -6,6 +6,27 @@ import threading
 import sv_ttk # 导入 sv_ttk 库
 
 class ADBInstaller:
+    DEFAULT_SETTINGS = {
+        "geometry": "700x600",
+        "default_theme": "light",
+        "winui_blue": '#0078d4',
+        "winui_light_blue": '#e6f3ff',
+        "winui_gray": '#f2f2f2',
+        "winui_dark_gray": '#e6e6e6',
+        "winui_text": '#333333',
+        "winui_border": '#e0e0e0',
+        "apk_path": "",
+        "is_connected": False,
+        "auto_connect": False,
+        "show_emoji": True,
+        "package_var_value": "",
+        "apk_var_value": "未选择文件",
+        "ip_address": "127.0.0.1",
+        "port": "58526",
+        "device_path": "/storage/emulated/0",
+        "restore_default_size": "600x600"
+    }
+
     def __init__(self, root):
         self.root = root
         self.root.title("ADB 应用管理器")
@@ -17,8 +38,8 @@ class ADBInstaller:
         except Exception as e:
             # 图标设置失败不影响程序运行
             pass
-        self.root.geometry("700x600")
-        self.default_geometry = "700x600"
+        self.root.geometry(self.DEFAULT_SETTINGS["geometry"])
+        self.default_geometry = self.DEFAULT_SETTINGS["geometry"]
         self.root.resizable(True, True)
         self.current_theme = None # 初始主题未设置，将在_apply_theme中加载或设置为默认
         self._apply_theme() # 应用主题 (根据保存的设置或默认值)
@@ -31,7 +52,7 @@ class ADBInstaller:
         应用当前主题设置。
         如果current_theme未设置，则尝试从设置加载；如果加载失败，则使用默认主题。
         """
-        DEFAULT_THEME = "dark" # 定义默认主题
+        DEFAULT_THEME = self.DEFAULT_SETTINGS["default_theme"] # 定义默认主题
         
         if self.current_theme is None:
             # 在此处可以添加从配置文件加载主题的逻辑
@@ -49,12 +70,12 @@ class ADBInstaller:
         self.style = ttk.Style()
         
         # 主色调 - WinUI风格的蓝色
-        winui_blue = '#0078d4'
-        winui_light_blue = '#e6f3ff'
-        winui_gray = '#f2f2f2'
-        winui_dark_gray = '#e6e6e6'
-        winui_text = '#333333'
-        winui_border = '#e0e0e0'
+        winui_blue = self.DEFAULT_SETTINGS["winui_blue"]
+        winui_light_blue = self.DEFAULT_SETTINGS["winui_light_blue"]
+        winui_gray = self.DEFAULT_SETTINGS["winui_gray"]
+        winui_dark_gray = self.DEFAULT_SETTINGS["winui_dark_gray"]
+        winui_text = self.DEFAULT_SETTINGS["winui_text"]
+        winui_border = self.DEFAULT_SETTINGS["winui_border"]
         
         # 配置Tkinter默认对话框的样式
         # self.root.option_add('*Dialog.msg.font', 'Segoe UI 10') # 交给 sv_ttk 处理主题
@@ -159,15 +180,15 @@ class ADBInstaller:
         self.notebook.bind('<<NotebookTabChanged>>', self.on_tab_changed)
                 
         # 初始化变量
-        self.apk_path = ""
-        self.is_connected = False
-        self.auto_connect = False
-        self.show_emoji = True  # 默认显示emoji
-        self.package_var = tk.StringVar(value="")
-        self.apk_var = tk.StringVar(value="未选择文件")
+        self.apk_path = self.DEFAULT_SETTINGS["apk_path"]
+        self.is_connected = self.DEFAULT_SETTINGS["is_connected"]
+        self.auto_connect = self.DEFAULT_SETTINGS["auto_connect"]
+        self.show_emoji = self.DEFAULT_SETTINGS["show_emoji"]  # 默认显示emoji
+        self.package_var = tk.StringVar(value=self.DEFAULT_SETTINGS["package_var_value"])
+        self.apk_var = tk.StringVar(value=self.DEFAULT_SETTINGS["apk_var_value"])
         
         # 获取adb.exe路径
-        self.adb_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "adb.exe")
+        self.adb_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "adb.exe") # 这行代码依赖于文件路径，不适合放入 DEFAULT_SETTINGS
         
         # 在操作状态选项卡中创建状态显示部分
         self.create_status_section()
@@ -234,7 +255,7 @@ class ADBInstaller:
         
         # IP地址输入
         ttk.Label(conn_frame, text="设备IP地址:").grid(row=0, column=0, sticky=tk.W, pady=5)
-        self.ip_var = tk.StringVar(value="127.0.0.1")
+        self.ip_var = tk.StringVar(value=self.DEFAULT_SETTINGS["ip_address"])
         self.ip_entry = ttk.Entry(conn_frame, textvariable=self.ip_var)
         self.ip_entry.grid(row=0, column=1, sticky=tk.W+tk.E, pady=5)
         self.ip_entry.bind('<FocusOut>', lambda event: self.save_settings())
@@ -242,7 +263,7 @@ class ADBInstaller:
         
         # 端口输入
         ttk.Label(conn_frame, text="端口:").grid(row=0, column=2, sticky=tk.W, pady=5)
-        self.port_var = tk.StringVar(value="58526")
+        self.port_var = tk.StringVar(value=self.DEFAULT_SETTINGS["port"])
         self.port_entry = ttk.Entry(conn_frame, textvariable=self.port_var)
         self.port_entry.grid(row=0, column=3, sticky=tk.W+tk.E, pady=5)
         self.port_entry.bind('<FocusOut>', lambda event: self.save_settings())
@@ -679,15 +700,15 @@ class ADBInstaller:
     def restore_all_settings(self):
         """恢复全部设置到默认值"""
         # 恢复默认窗口大小
-        default_size = "600x600"
+        default_size = self.DEFAULT_SETTINGS["restore_default_size"]
         self.window_size_var.set(default_size)
         self.root.geometry(default_size)
         
         # 恢复其他默认设置
-        self.auto_connect_var.set(False)
-        self.show_emoji_var.set(True)
-        self.ip_var.set("127.0.0.1")
-        self.port_var.set("58526")
+        self.auto_connect_var.set(self.DEFAULT_SETTINGS["auto_connect"])
+        self.show_emoji_var.set(self.DEFAULT_SETTINGS["show_emoji"])
+        self.ip_var.set(self.DEFAULT_SETTINGS["ip_address"])
+        self.port_var.set(self.DEFAULT_SETTINGS["port"])
         
         self.log("已恢复全部设置到默认值")
     
@@ -904,7 +925,7 @@ class ADBInstaller:
         
         # 路径输入
         ttk.Label(top_frame, text="设备路径:").pack(side=tk.LEFT, padx=5)
-        self.device_path_var = tk.StringVar(value="/storage/emulated/0")
+        self.device_path_var = tk.StringVar(value=self.DEFAULT_SETTINGS["device_path"])
         self.device_path_entry = ttk.Entry(top_frame, textvariable=self.device_path_var)
         self.device_path_entry.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
         # 绑定回车键事件，当用户按下回车键时刷新文件列表
